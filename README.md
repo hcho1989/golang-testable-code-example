@@ -25,3 +25,4 @@ To produce readable and testable code, remember: Dependency Injection!
 
 To show untestable code, I have written an app that sends a slack message, both in testable and untestable code.
 
+https://medium.com/@hochiho/writing-testable-and-flexible-code-in-golang-2b1a0e66627a
