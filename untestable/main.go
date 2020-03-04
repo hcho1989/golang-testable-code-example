@@ -5,23 +5,26 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// App sends slack message
+// App that logs and sends message on start
 type App struct{}
 
-var logger = logrus.New()         // Unmockable!!
-var srv = slack.New("some-token") // Unmockable!!
+var logger = logrus.New()            // Unmockable!!
+var sender = slack.New("some-token") // Unmockable!!
 
-// Start logs some messages, and send message through slack
+// Start logs some messages, and send a message to a channel
 func (c *App) Start() error {
 	logger.Infoln("----- App Start!")
-	logger.Infoln("----- Connect external service")
+	logger.Infoln("----- Try to Send Message")
 
-	x, y, z, err := srv.SendMessage("Hello World!")
+	x, y, z, err := sender.SendMessage(
+		"some-channel",
+		slack.MsgOptionText("Hello World!", false),
+	)
 	if err != nil {
-		logger.Infoln("----- Fail to connect external service", err)
+		logger.Infoln("----- Fail to send message", err)
 		return err
 	}
-	logger.Infoln("----- Message Sent, returns: ", x, y, z)
+	logger.Infoln("----- Message Sent, result: ", x, y, z)
 	return nil
 }
 

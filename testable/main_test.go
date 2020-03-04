@@ -18,21 +18,22 @@ func (suite *MainTestSuite) TestApp_Start() {
 	t := suite.T()
 
 	t.Run("App.Start shall have called service.Connect and service.SendMessage", func(t *testing.T) {
-		mSrv := mocks.ExternalServiceInterface{}
+		result := "i don't care what this is"
+		mMsgClient := mocks.MessageClientInterface{}
 		mLogger := mocks.LoggerInterface{}
 		mLogger.On("Infoln", mock.AnythingOfType("string")).Return()
-		mSrv.On("SendMessage", "Hello World!").Return("x", "y", "z", nil)
-		mLogger.On("Infoln", "----- Message Sent, returns: ", "x", "y", "z").Return()
+		mMsgClient.On("SendMessage", "some-channel", "Hello World!").Return(result, nil)
+		mLogger.On("Infoln", "----- Message Sent, result: ", result).Return()
 
 		app := &App{
-			ExtSrv: &mSrv,
-			Logger: &mLogger, // You can also generate mock struct for LoggerInterface
+			MsgClient: &mMsgClient,
+			Logger:    &mLogger, // You can also generate mock struct for LoggerInterface
 		}
 		err := app.Start()
-		mSrv.AssertCalled(t, "SendMessage", "Hello World!")
+		mMsgClient.AssertCalled(t, "SendMessage", "some-channel", "Hello World!")
 		mLogger.AssertCalled(t, "Infoln", "----- App Start!")
-		mLogger.AssertCalled(t, "Infoln", "----- Connect external service")
-		mLogger.AssertCalled(t, "Infoln", "----- Message Sent, returns: ", "x", "y", "z")
+		mLogger.AssertCalled(t, "Infoln", "----- Try to Send Message")
+		mLogger.AssertCalled(t, "Infoln", "----- Message Sent, result: ", result)
 
 		assert.Nil(t, err)
 	})

@@ -1,19 +1,19 @@
 package main
 
 import (
-	"github.com/nlopes/slack"
+	"github.com/hcho1989/golang-testable-code-example/testable/slack"
 	"github.com/sirupsen/logrus"
 )
 
-// App sends slack message
+// App is now decoupled from the message client and logger
 type App struct {
-	ExtSrv ExternalServiceInterface
-	Logger LoggerInterface
+	MsgClient MessageClientInterface
+	Logger    LoggerInterface
 }
 
-// ExternalServiceInterface defines the message sending interface
-type ExternalServiceInterface interface {
-	SendMessage(channel string, options ...slack.MsgOption) (string, string, string, error)
+// MessageClientInterface defines the message sending interface
+type MessageClientInterface interface {
+	SendMessage(channel, message string) (interface{}, error)
 }
 
 // LoggerInterface defines the message logging interface
@@ -21,28 +21,27 @@ type LoggerInterface interface {
 	Infoln(...interface{})
 }
 
-// Start logs some messages, and send message through slack
+// Start logs some messages, and send a message to a channel
 func (c *App) Start() error {
 
 	c.Logger.Infoln("----- App Start!")
-	c.Logger.Infoln("----- Connect external service")
+	c.Logger.Infoln("----- Try to Send Message")
 
-	x, y, z, err := c.ExtSrv.SendMessage("Hello World!")
+	result, err := c.MsgClient.SendMessage("some-channel", "Hello World!")
 	if err != nil {
-		c.Logger.Infoln("----- Fail to connect external service", err)
+		c.Logger.Infoln("----- Fail to send message", err)
 		return err
 	}
-	c.Logger.Infoln("----- Message Sent, returns: ", x, y, z)
+	c.Logger.Infoln("----- Message Sent, result: ", result)
 	return nil
 }
 
 func main() {
-	key := "some-api-key"
-
-	srv := slack.New(key)
+	sender := slack.SlackClient{Key: "some-api-key"}
+	logger := logrus.New()
 	app := &App{
-		ExtSrv: srv,
-		Logger: logrus.New(),
+		MsgClient: &sender,
+		Logger:    logger,
 	}
 
 	app.Start()
